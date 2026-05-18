@@ -52,38 +52,37 @@ export default function SchedulePanel() {
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-4">Programación de Horarios</h3>
 
-      <div className="flex gap-2 mb-4 items-center flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4 sm:items-center">
         <select
           value={action}
           onChange={(e) => setAction(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white w-full sm:w-auto"
         >
           <option value="CLOSE">Cerrar</option>
           <option value="OPEN">Abrir</option>
         </select>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-1 min-w-0">
           <input
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm flex-1 min-w-0"
           />
-          <span className="text-gray-400 text-sm">a</span>
+          <span className="text-gray-400 text-sm shrink-0">a</span>
           <input
             type="time"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm flex-1 min-w-0"
           />
+          <button
+            onClick={addSchedule}
+            className="bg-[#1565C0] text-white p-2 rounded-lg hover:bg-[#1256A5] transition-colors shrink-0"
+          >
+            <Plus size={18} />
+          </button>
         </div>
-
-        <button
-          onClick={addSchedule}
-          className="bg-[#1565C0] text-white p-2 rounded-lg hover:bg-[#1256A5] transition-colors"
-        >
-          <Plus size={18} />
-        </button>
       </div>
 
       <div className="space-y-2">

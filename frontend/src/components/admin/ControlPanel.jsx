@@ -44,31 +44,31 @@ export default function ControlPanel({ status, onUpdate }) {
         </div>
       )}
 
-      <div className="flex gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <button
           onClick={() => handleOverride('FORCE_OPEN')}
           disabled={loading || status.emergencyLock}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 ${
+          className={`flex items-center justify-center gap-1.5 py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 ${
             confirming === 'FORCE_OPEN'
               ? 'bg-green-700 text-white ring-2 ring-green-400'
               : 'bg-green-600 hover:bg-green-700 text-white'
           }`}
         >
-          <Unlock size={16} />
-          {confirming === 'FORCE_OPEN' ? '¿CONFIRMAR?' : 'FORZAR APERTURA'}
+          <Unlock size={16} className="shrink-0" />
+          <span className="truncate">{confirming === 'FORCE_OPEN' ? '¿CONFIRMAR?' : 'FORZAR APERTURA'}</span>
         </button>
 
         <button
           onClick={() => handleOverride('FORCE_CLOSE')}
           disabled={loading || status.emergencyLock}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 ${
+          className={`flex items-center justify-center gap-1.5 py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 ${
             confirming === 'FORCE_CLOSE'
               ? 'bg-yellow-700 text-white ring-2 ring-yellow-400'
               : 'bg-yellow-500 hover:bg-yellow-600 text-white'
           }`}
         >
-          <Lock size={16} />
-          {confirming === 'FORCE_CLOSE' ? '¿CONFIRMAR?' : 'FORZAR CIERRE'}
+          <Lock size={16} className="shrink-0" />
+          <span className="truncate">{confirming === 'FORCE_CLOSE' ? '¿CONFIRMAR?' : 'FORZAR CIERRE'}</span>
         </button>
       </div>
 

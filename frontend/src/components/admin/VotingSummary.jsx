@@ -104,22 +104,22 @@ export default function VotingSummary() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p className="text-xs sm:text-sm text-gray-500">
           Quórum necesario: <strong>{votingData.quorumNeeded || Math.ceil(presenceCount * 0.3)} votos</strong>
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           {!votingData.active ? (
             <button
               onClick={handleStartSession}
-              className="px-4 py-2 bg-[#1565C0] text-white rounded-lg text-sm font-medium hover:bg-[#1256A5] transition-colors"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-[#1565C0] text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-[#1256A5] transition-colors"
             >
               Iniciar Votación
             </button>
           ) : (
             <button
               onClick={handleCloseSession}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+              className="flex-1 sm:flex-initial px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-red-700 transition-colors"
             >
               Cerrar Votación
             </button>

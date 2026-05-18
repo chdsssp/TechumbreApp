@@ -45,58 +45,55 @@ export default function SensorCards({ sensors, weather = {} }) {
   const nextHours = weather.nextHoursProbability || [];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {/* Temperatura */}
-      <div className={`${temp.bg} rounded-xl p-4 shadow-sm border ${temp.border} animate-fade-in transition-colors duration-500`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className={`flex items-center gap-1.5 ${temp.label} text-xs font-semibold uppercase tracking-wide`}>
-            <Thermometer size={14} className={temp.icon} />
-            Temperatura
+      <div className={`${temp.bg} rounded-xl p-3 sm:p-4 shadow-sm border ${temp.border} animate-fade-in transition-colors duration-500 min-w-0`}>
+        <div className="flex items-center justify-between mb-2 gap-1">
+          <div className={`flex items-center gap-1 ${temp.label} text-[10px] sm:text-xs font-semibold uppercase tracking-wide truncate`}>
+            <Thermometer size={14} className={`${temp.icon} shrink-0`} />
+            <span className="truncate">Temperatura</span>
           </div>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${temp.badge}`}>{temp.text}</span>
+          <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${temp.badge}`}>{temp.text}</span>
         </div>
-        <div className={`text-3xl font-bold ${temp.value}`}>{sensors.temperature.toFixed(1)}°C</div>
-        <div className="text-xs text-gray-500 mt-1.5">{temp.desc}</div>
-        <div className="flex items-center justify-between mt-2 text-[10px] text-gray-400">
-          <span>Sensación: {getTempRange(sensors.temperature)}</span>
-          <span>Rango: 15–40°C</span>
+        <div className={`text-2xl sm:text-3xl font-bold ${temp.value}`}>{sensors.temperature.toFixed(1)}°C</div>
+        <div className="text-[11px] sm:text-xs text-gray-500 mt-1.5">{temp.desc}</div>
+        <div className="flex items-center justify-between mt-2 text-[9px] sm:text-[10px] text-gray-400 gap-1">
+          <span className="truncate">Sensación: {getTempRange(sensors.temperature)}</span>
+          <span className="whitespace-nowrap shrink-0">15–40°C</span>
         </div>
       </div>
 
       {/* Humedad */}
-      <div className={`${hum.bg} rounded-xl p-4 shadow-sm border ${hum.border} animate-fade-in transition-colors duration-500`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className={`flex items-center gap-1.5 ${hum.label} text-xs font-semibold uppercase tracking-wide`}>
-            <Droplets size={14} className={hum.icon} />
-            Humedad
+      <div className={`${hum.bg} rounded-xl p-3 sm:p-4 shadow-sm border ${hum.border} animate-fade-in transition-colors duration-500 min-w-0`}>
+        <div className="flex items-center justify-between mb-2 gap-1">
+          <div className={`flex items-center gap-1 ${hum.label} text-[10px] sm:text-xs font-semibold uppercase tracking-wide truncate`}>
+            <Droplets size={14} className={`${hum.icon} shrink-0`} />
+            <span className="truncate">Humedad</span>
           </div>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${hum.badge}`}>{hum.text}</span>
+          <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${hum.badge}`}>{hum.text}</span>
         </div>
-        <div className={`text-3xl font-bold ${hum.value}`}>{sensors.humidity.toFixed(0)}%</div>
-        <div className="text-xs text-gray-500 mt-1.5">{hum.desc}</div>
+        <div className={`text-2xl sm:text-3xl font-bold ${hum.value}`}>{sensors.humidity.toFixed(0)}%</div>
+        <div className="text-[11px] sm:text-xs text-gray-500 mt-1.5">{hum.desc}</div>
         <div className="w-full bg-white/60 rounded-full h-2 mt-2">
           <div className={`${hum.bar} h-2 rounded-full transition-all duration-500`} style={{ width: `${Math.min(sensors.humidity, 100)}%` }} />
         </div>
-        <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
+        <div className="flex items-center justify-between mt-1 text-[9px] sm:text-[10px] text-gray-400">
           <span>Ideal: 30–60%</span>
           <span>Relativa</span>
         </div>
       </div>
 
-      {/* Precipitación — ahora con datos de Open-Meteo */}
-      <div className={`${rain.bg} rounded-xl p-4 shadow-sm border ${rain.border} animate-fade-in transition-colors duration-500`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className={`flex items-center gap-1.5 ${rain.label} text-xs font-semibold uppercase tracking-wide`}>
-            <CloudRain size={14} className={rain.icon} />
-            Precipitación
+      {/* Precipitación */}
+      <div className={`${rain.bg} rounded-xl p-3 sm:p-4 shadow-sm border ${rain.border} animate-fade-in transition-colors duration-500 min-w-0`}>
+        <div className="flex items-center justify-between mb-2 gap-1">
+          <div className={`flex items-center gap-1 ${rain.label} text-[10px] sm:text-xs font-semibold uppercase tracking-wide truncate`}>
+            <CloudRain size={14} className={`${rain.icon} shrink-0`} />
+            <span className="truncate">Precipitación</span>
           </div>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${rain.badge}`}>{rain.text}</span>
+          <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${rain.badge}`}>{rain.text}</span>
         </div>
-        <div className={`text-3xl font-bold ${rain.value}`}>{precipProb}%</div>
-        <div className="text-xs text-gray-500 mt-1.5">{rain.desc}</div>
-        <div className="w-full bg-white/60 rounded-full h-2 mt-2">
-          <div className={`${rain.bar} h-2 rounded-full transition-all duration-500`} style={{ width: `${precipProb}%` }} />
-        </div>
+        <div className={`text-2xl sm:text-3xl font-bold ${rain.value}`}>{precipProb}%</div>
+        <div className="text-[11px] sm:text-xs text-gray-500 mt-1.5">{rain.desc}</div>
         {nextHours.length > 0 && (
           <div className="flex items-center gap-[3px] mt-2">
             {nextHours.slice(0, 6).map((p, i) => (
@@ -110,36 +107,36 @@ export default function SensorCards({ sensors, weather = {} }) {
             ))}
           </div>
         )}
-        <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
-          <span className="flex items-center gap-1">
+        <div className="flex items-center justify-between mt-1 text-[9px] sm:text-[10px] text-gray-400 gap-1">
+          <span className="flex items-center gap-1 truncate">
             {sensors.rain
-              ? <><CloudLightning size={10} className="text-red-500" /> Sensor: Lluvia</>
-              : <><CheckCircle size={10} className="text-green-500" /> Sensor: Seco</>
+              ? <><CloudLightning size={10} className="text-red-500 shrink-0" /> <span className="truncate">Sensor: Lluvia</span></>
+              : <><CheckCircle size={10} className="text-green-500 shrink-0" /> <span className="truncate">Sensor: Seco</span></>
             }
           </span>
-          <span>Fuente: Open-Meteo</span>
+          <span className="whitespace-nowrap shrink-0">Open-Meteo</span>
         </div>
       </div>
 
       {/* UV */}
-      <div className={`${uv.bg} rounded-xl p-4 shadow-sm border ${uv.border} animate-fade-in transition-colors duration-500`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className={`flex items-center gap-1.5 ${uv.label} text-xs font-semibold uppercase tracking-wide`}>
-            <Sun size={14} className={uv.icon} />
-            Índice UV
+      <div className={`${uv.bg} rounded-xl p-3 sm:p-4 shadow-sm border ${uv.border} animate-fade-in transition-colors duration-500 min-w-0`}>
+        <div className="flex items-center justify-between mb-2 gap-1">
+          <div className={`flex items-center gap-1 ${uv.label} text-[10px] sm:text-xs font-semibold uppercase tracking-wide truncate`}>
+            <Sun size={14} className={`${uv.icon} shrink-0`} />
+            <span className="truncate">Índice UV</span>
           </div>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${uv.badge}`}>{uv.text}</span>
+          <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${uv.badge}`}>{uv.text}</span>
         </div>
-        <div className={`text-3xl font-bold ${uv.value}`}>{sensors.uvIndex.toFixed(1)}</div>
-        <div className="text-xs text-gray-500 mt-1.5">{uv.desc}</div>
+        <div className={`text-2xl sm:text-3xl font-bold ${uv.value}`}>{sensors.uvIndex.toFixed(1)}</div>
+        <div className="text-[11px] sm:text-xs text-gray-500 mt-1.5">{uv.desc}</div>
         <div className="w-full bg-white/60 rounded-full h-1.5 mt-2">
           <div className={`h-1.5 rounded-full transition-all duration-500 ${
             sensors.uvIndex < 3 ? 'bg-green-500' : sensors.uvIndex < 6 ? 'bg-yellow-500' : sensors.uvIndex < 8 ? 'bg-orange-500' : 'bg-red-500'
           }`} style={{ width: `${Math.min((sensors.uvIndex / 11) * 100, 100)}%` }} />
         </div>
-        <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
+        <div className="flex items-center justify-between mt-1 text-[9px] sm:text-[10px] text-gray-400 gap-1">
           <span>Escala: 0–11+</span>
-          <span>{sensors.uvIndex >= 8 ? 'Cierre automático' : 'Normal'}</span>
+          <span className="truncate">{sensors.uvIndex >= 8 ? 'Cierre auto.' : 'Normal'}</span>
         </div>
       </div>
     </div>

@@ -62,8 +62,8 @@ export default function AdminDashboard() {
               <Menu size={20} />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-gray-800">Panel de Control de Infraestructura</h1>
-              <p className="text-xs text-gray-400">Sistema de Techumbre Automatizada Inteligente</p>
+              <h1 className="text-sm sm:text-lg font-bold text-gray-800 leading-tight">Panel de Control de Infraestructura</h1>
+              <p className="text-[10px] sm:text-xs text-gray-400">Sistema de Techumbre Automatizada Inteligente</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
 
           {activeTab === 'dashboard' && (
             <div className="space-y-6 animate-fade-in">
-              <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 sm:gap-6">
                 <RoofStatus status={status} />
                 <SensorCards sensors={sensors} weather={weather} />
               </div>
