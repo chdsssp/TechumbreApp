@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum RoofState {
+  OPEN
+  CLOSED
+  MOVING
+}
+
+enum VoteOption {
+  OPEN
+  CLOSE
+}
+
+enum SessionStatus {
+  ACTIVE
+  CLOSED
+  EXPIRED
+}
+
+enum SessionResult {
+  OPEN
+  CLOSE
+  NO_QUORUM
+  TIE
+}
+
+enum OverrideAction {
+  FORCE_OPEN
+  FORCE_CLOSE
+  RELEASE
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  matricula    String         @unique
+  name         String
+  career       String         @default("Ingeniería en Software")
+  rfidUid      String?        @unique @map("rfid_uid")
+  passwordHash String         @map("password_hash")
+  role         Role           @default(STUDENT)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  presenceLogs PresenceLog[]
+  votes        Vote[]
+
+  @@map("users")
+}
+
+model PresenceLog {
+  id       Int       @id @default(autoincrement())
+  userId   Int       @map("user_id")
+  rfidUid  String    @map("rfid_uid")
+  checkIn  DateTime  @default(now()) @map("check_in")
+  checkOut DateTime? @map("check_out")
+  active   Boolean   @default(true)
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@map("presence_logs")
+}
+
+model Telemetry {
+  id          Int       @id @default(autoincrement())
+  temperature Float
+  humidity    Float
+  rain        Boolean
+  rainAnalog  Int       @default(0) @map("rain_analog")
+  uvIndex     Float     @map("uv_index")
+  roofState   RoofState @default(CLOSED) @map("roof_state")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("telemetry")
+}
+
+model VotingSession {
+  id           Int            @id @default(autoincrement())
+  status       SessionStatus  @default(ACTIVE)
+  result       SessionResult?
+  totalPresent Int            @default(0) @map("total_present")
+  totalVotes   Int            @default(0) @map("total_votes")
+  quorumNeeded Int            @default(0) @map("quorum_needed")
+  startedAt    DateTime       @default(now()) @map("started_at")
+  closedAt     DateTime?      @map("closed_at")
+  votes        Vote[]
+
+  @@map("voting_sessions")
+}
+
+model Vote {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @map("user_id")
+  sessionId Int           @map("session_id")
+  vote      VoteOption
+  createdAt DateTime      @default(now()) @map("created_at")
+  user      User          @relation(fields: [userId], references: [id])
+  session   VotingSession @relation(fields: [sessionId], references: [id])
+
+  @@unique([userId, sessionId])
+  @@map("votes")
+}
+
+model Override {
+  id         Int            @id @default(autoincrement())
+  adminId    Int            @map("admin_id")
+  action     OverrideAction
+  reason     String?
+  active     Boolean        @default(true)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  releasedAt DateTime?      @map("released_at")
+
+  @@map("overrides")
+}
+
+model Schedule {
+  id        Int        @id @default(autoincrement())
+  dayOfWeek Int[]      @map("day_of_week")
+  action    VoteOption
+  time      String
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@map("schedules")
+}
+
+model SystemState {
+  id             Int       @id @default(1)
+  roofState      RoofState @default(CLOSED) @map("roof_state")
+  activePriority Int       @default(4) @map("active_priority")
+  emergencyLock  Boolean   @default(false) @map("emergency_lock")
+  rainAutoMode   Boolean   @default(true) @map("rain_auto_mode")
+  lastEsp32Ping  DateTime? @map("last_esp32_ping")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("system_state")
+}
