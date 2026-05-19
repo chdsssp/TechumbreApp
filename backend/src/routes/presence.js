@@ -1,9 +1,66 @@
 const { Router } = require('express');
 const { z } = require('zod');
-const { prisma } = require('../middlewares/auth');
+const { prisma, authenticateToken } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validate');
 
 const router = Router();
+
+// Auto check-in: el alumno se registra desde su portal (sin RFID)
+router.post('/self-checkin', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const existing = await prisma.presenceLog.findFirst({ where: { userId, active: true } });
+    if (existing) return res.status(409).json({ error: 'Ya tienes registro de entrada activo' });
+
+    await prisma.presenceLog.create({
+      data: { userId, rfidUid: `MANUAL-${userId}` },
+    });
+
+    const totalPresent = await prisma.presenceLog.count({ where: { active: true } });
+    const io = req.app.get('io');
+    if (io) io.emit('presence:change', {
+      action: 'checkin',
+      student: { id: user.id, name: user.name, matricula: user.matricula },
+      totalPresent,
+    });
+
+    res.status(201).json({ message: 'Check-in exitoso' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error en check-in' });
+  }
+});
+
+// Auto check-out: el alumno sale desde su portal
+router.post('/self-checkout', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const log = await prisma.presenceLog.findFirst({ where: { userId, active: true } });
+    if (!log) return res.status(404).json({ error: 'No tienes registro de entrada activo' });
+
+    await prisma.presenceLog.update({
+      where: { id: log.id },
+      data: { active: false, checkOut: new Date() },
+    });
+
+    const totalPresent = await prisma.presenceLog.count({ where: { active: true } });
+    const io = req.app.get('io');
+    if (io) io.emit('presence:change', {
+      action: 'checkout',
+      student: { id: user.id, name: user.name, matricula: user.matricula },
+      totalPresent,
+    });
+
+    res.json({ message: 'Check-out exitoso' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error en check-out' });
+  }
+});
 
 const rfidSchema = z.object({
   rfidUid: z.string().min(1),

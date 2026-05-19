@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket, useSocketEvent } from '../hooks/useSocket';
 import ConnectionIndicator from '../components/shared/ConnectionIndicator';
-import { LogOut, MapPin, CheckCircle, XCircle, Sun, CloudRain, Thermometer, Droplets, AlertTriangle } from 'lucide-react';
+import { LogOut, MapPin, CheckCircle, XCircle, Sun, CloudRain, Thermometer, Droplets, AlertTriangle, LogIn } from 'lucide-react';
 import api from '../services/api';
 
 export default function StudentPortal() {
@@ -15,6 +15,7 @@ export default function StudentPortal() {
   const [hasVoted, setHasVoted] = useState(false);
   const [emergencyLock, setEmergencyLock] = useState(false);
   const [voting, setVoting] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
 
   const loadData = async () => {
     try {
@@ -72,6 +73,23 @@ export default function StudentPortal() {
     setWeather(data);
   }, []));
 
+  const handlePresence = async () => {
+    setCheckingIn(true);
+    try {
+      if (presence) {
+        await api.post('/presence/self-checkout');
+        setPresence(false);
+      } else {
+        await api.post('/presence/self-checkin');
+        setPresence(true);
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error al registrar presencia');
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
   const handleVote = async (vote) => {
     setVoting(true);
     try {
@@ -116,19 +134,34 @@ export default function StudentPortal() {
           <p className="text-sm text-gray-500 mt-1">Matrícula: {user?.matricula} | {user?.career}</p>
         </div>
 
-        <div className={`rounded-xl p-4 shadow-sm border flex items-center justify-between ${
+        {/* Presencia con botón de check-in/checkout */}
+        <div className={`rounded-xl p-4 shadow-sm border ${
           presence ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
         }`}>
-          <div className="flex items-center gap-3">
-            <MapPin size={20} className={presence ? 'text-green-600' : 'text-red-500'} />
-            <div>
-              <div className="text-sm font-semibold text-gray-700">Estado de Ubicación</div>
-              <div className={`text-sm font-bold ${presence ? 'text-green-700' : 'text-red-600'}`}>
-                {presence ? 'DENTRO DE LA FACULTAD' : 'FUERA DE LA FACULTAD'}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MapPin size={20} className={presence ? 'text-green-600' : 'text-red-500'} />
+              <div>
+                <div className="text-sm font-semibold text-gray-700">Estado de Ubicación</div>
+                <div className={`text-sm font-bold ${presence ? 'text-green-700' : 'text-red-600'}`}>
+                  {presence ? 'DENTRO DE LA FACULTAD' : 'FUERA DE LA FACULTAD'}
+                </div>
               </div>
             </div>
+            {presence ? <CheckCircle size={24} className="text-green-500" /> : <XCircle size={24} className="text-red-400" />}
           </div>
-          {presence ? <CheckCircle size={24} className="text-green-500" /> : <XCircle size={24} className="text-red-400" />}
+          <button
+            onClick={handlePresence}
+            disabled={checkingIn}
+            className={`mt-3 w-full py-2.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+              presence
+                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
+          >
+            <LogIn size={16} className={presence ? 'rotate-180' : ''} />
+            {checkingIn ? 'Procesando...' : presence ? 'REGISTRAR SALIDA' : 'REGISTRAR ENTRADA'}
+          </button>
         </div>
 
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 text-center">
@@ -193,7 +226,7 @@ export default function StudentPortal() {
             </div>
 
             {hasVoted && <p className="text-sm text-green-600 font-medium mt-3">Ya emitiste tu voto</p>}
-            {!presence && !hasVoted && <p className="text-sm text-red-500 font-medium mt-3">Debes estar presente para votar</p>}
+            {!presence && !hasVoted && <p className="text-sm text-red-500 font-medium mt-3">Registra tu entrada para poder votar</p>}
           </div>
         )}
 
