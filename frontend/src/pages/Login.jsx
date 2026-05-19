@@ -36,11 +36,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#0D1B2A] to-[#1565C0] px-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1565C0] to-[#0D1B2A] flex items-center justify-center">
-              <span className="text-white font-bold text-lg font-['Plus_Jakarta_Sans']">UAS</span>
-            </div>
-          </div>
+          <img src="/uas-logo.png" alt="UAS" className="h-52 w-auto drop-shadow-xl" />
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
