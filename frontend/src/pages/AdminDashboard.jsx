@@ -63,7 +63,7 @@ export default function AdminDashboard() {
             </button>
             <div>
               <h1 className="text-sm sm:text-lg font-bold text-gray-800 leading-tight">Panel de Control de Infraestructura</h1>
-              <p className="text-[10px] sm:text-xs text-gray-400">Sistema de Techumbre Automatizada Inteligente</p>
+              <p className="text-[10px] sm:text-xs text-gray-400">AutoMalla — Sistema Automatizado Inteligente</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

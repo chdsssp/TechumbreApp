@@ -56,7 +56,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <p className="text-xs text-white/40 text-center">Sistema de Techumbre v1.0</p>
+          <p className="text-xs text-white/40 text-center">AutoMalla v1.0</p>
         </div>
       </aside>
     </>

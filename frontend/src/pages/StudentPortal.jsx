@@ -118,7 +118,7 @@ export default function StudentPortal() {
             <span className="text-sm font-bold">UAS</span>
           </div>
           <div>
-            <div className="font-bold text-sm">Sistema de Techumbre</div>
+            <div className="font-bold text-sm">AutoMalla</div>
             <div className="text-xs text-white/70">Facultad de Ingeniería Mochis</div>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function StudentPortal() {
       </main>
 
       <footer className="text-center py-4 text-xs text-gray-400">
-        <p>Sistema de Techumbre Automatizada Inteligente v1.0</p>
+        <p>AutoMalla — Sistema Automatizado Inteligente v1.0</p>
         <p>&copy; 2025 Facultad de Ingeniería Mochis - UAS</p>
       </footer>
 
