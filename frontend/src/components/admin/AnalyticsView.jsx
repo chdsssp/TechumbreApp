@@ -9,17 +9,13 @@ export default function AnalyticsView() {
     const load = async () => {
       try {
         const res = await api.get('/telemetry/history?limit=50');
-        setData(res.data.map((d, i) => {
-          const date = new Date(d.createdAt);
-          const label = date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          return {
-            time: label,
-            index: i + 1,
-            Temperatura: parseFloat(d.temperature.toFixed(1)),
-            Humedad: parseFloat(d.humidity.toFixed(1)),
-            UV: parseFloat(d.uvIndex.toFixed(1)),
-          };
-        }));
+        setData(res.data.map((d, i) => ({
+          muestra: `${i + 1}m`,
+          time: new Date(d.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          Temperatura: parseFloat(d.temperature.toFixed(1)),
+          Humedad: parseFloat(d.humidity.toFixed(1)),
+          UV: parseFloat(d.uvIndex.toFixed(1)),
+        })));
       } catch {}
     };
     load();
@@ -39,15 +35,16 @@ export default function AnalyticsView() {
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis
-              dataKey="time"
+              dataKey="muestra"
               tick={{ fontSize: 11 }}
               stroke="#9ca3af"
-              interval="preserveStartEnd"
+              interval={4}
             />
             <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" />
             <Tooltip
               contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
               labelStyle={{ fontWeight: 600 }}
+              labelFormatter={(label, payload) => payload?.[0]?.payload?.time ?? label}
             />
             <Legend />
             <Line type="monotone" dataKey="Temperatura" stroke="#ef4444" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
