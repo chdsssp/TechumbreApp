@@ -19,18 +19,14 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, onClose }) {
       }`}>
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-              <span className="text-sm font-bold">UAS</span>
-            </div>
+            <img src="/uas-logo.png" alt="UAS" className="w-10 h-10 object-contain" />
             <div className="text-xs">
               <div className="font-semibold">Universidad Autónoma</div>
               <div className="text-white/60">de Sinaloa</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-              <span className="text-sm font-bold">FIM</span>
-            </div>
+            <img src="/logo-fim.png" alt="FIM" className="w-10 h-10 object-contain" />
             <div className="text-xs">
               <div className="font-semibold">Facultad de Ingeniería</div>
               <div className="text-white/60">Mochis</div>
