@@ -37,8 +37,8 @@ const char* API_KEY     = "esp32-techumbre-key";
 //  POSICIONES DE LOS SERVOS — CALIBRAR SEGÚN TU MECANISMO
 // ================================================================
 
-const int SERVO_ABIERTO  = 90;   // grados para techo abierto
-const int SERVO_CERRADO  = 0;    // grados para techo cerrado
+const int SERVO_ABIERTO  = 0;    // grados para techo abierto
+const int SERVO_CERRADO  = 180;  // grados para techo cerrado (gira 180°)
 
 // ================================================================
 //  OBJETOS
