@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
 export default function Login() {
-  const [searchParams] = useSearchParams();
-  const isAdmin = searchParams.get('admin') === 'true';
   const [matricula, setMatricula] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,10 +17,16 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const user = await login(matricula, password, isAdmin);
+      const user = await login(matricula, password, false);
       navigate(user.role === 'ADMIN' ? '/admin' : '/alumnado');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+    } catch {
+      // Si falla como estudiante, intentar como admin
+      try {
+        const user = await login(matricula, password, true);
+        navigate('/admin');
+      } catch (err) {
+        setError(err.response?.data?.error || 'Matrícula o contraseña incorrectos');
+      }
     } finally {
       setLoading(false);
     }
@@ -41,7 +45,7 @@ export default function Login() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-1">
-            {isAdmin ? 'Acceso Administrativo' : 'Acceso a Control de Ambiente'}
+            AutoMalla
           </h1>
           <p className="text-center text-gray-500 mb-6 text-sm">Facultad de Ingeniería Mochis</p>
 
@@ -105,27 +109,10 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-4 text-center">
-            {isAdmin ? (
-              <button
-                onClick={() => navigate('/login')}
-                className="text-[#1565C0] hover:underline text-sm font-medium"
-              >
-                Acceso Estudiante
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate('/login?admin=true')}
-                className="text-[#1565C0] hover:underline text-sm font-medium"
-              >
-                Acceso Administrativo
-              </button>
-            )}
-          </div>
         </div>
 
         <p className="text-center text-white/60 text-xs mt-6">
-          &copy; 2025 Universidad Autónoma de Sinaloa. Todos los derechos reservados.
+          Universidad Autónoma de Sinaloa
         </p>
       </div>
     </div>
