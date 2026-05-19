@@ -108,13 +108,12 @@ router.get('/weather', async (req, res) => {
 
 router.get('/history', async (req, res) => {
   try {
-    const hours = parseInt(req.query.hours) || 2;
-    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
-    const history = await prisma.telemetry.findMany({
-      where: { createdAt: { gte: since } },
-      orderBy: { createdAt: 'asc' },
+    const limit = parseInt(req.query.limit) || 50;
+    const rows = await prisma.telemetry.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 500),
     });
-    res.json(history);
+    res.json(rows.reverse()); // oldest first for the chart
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener histórico' });
   }
