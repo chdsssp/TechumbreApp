@@ -1,6 +1,6 @@
 // ================================================================
-//  SISTEMA DE TECHUMBRE AUTOMATIZADA INTELIGENTE
-//  ESP32 + DHT22 + GUVA-S12SD + FC-37 + Servos MG996R
+//  AUTOMALLA — Sistema Automatizado Inteligente
+//  ESP32 + DHT22 + GUVA-S12SD + FC-37 + Motorreductores TT (L298N)
 // ================================================================
 
 #include <WiFi.h>
@@ -9,7 +9,6 @@
 #include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
-#include <ESP32Servo.h>
 
 // ================================================================
 //  CONFIGURACIÓN — EDITAR ESTOS VALORES
@@ -23,40 +22,97 @@ const int   SERVER_PORT = 443;
 const char* API_KEY     = "esp32-techumbre-key";
 
 // ================================================================
-//  PINES — AJUSTAR SEGÚN TU CIRCUITO
+//  PINES SENSORES
 // ================================================================
 
 #define DHT_PIN       4    // GPIO4  — señal DHT22
 #define UV_PIN        34   // GPIO34 — salida analógica GUVA-S12SD
-#define RAIN_DIG_PIN  27   // GPIO27 — salida digital FC-37 (DO)
+#define RAIN_DIG_PIN  13   // GPIO13 — salida digital FC-37 (DO)
 #define RAIN_ANA_PIN  35   // GPIO35 — salida analógica FC-37 (AO)
-#define SERVO1_PIN    18   // GPIO18 — servo izquierdo MG996R
-#define SERVO2_PIN    19   // GPIO19 — servo derecho MG996R
 
 // ================================================================
-//  POSICIONES DE LOS SERVOS — CALIBRAR SEGÚN TU MECANISMO
+//  PINES L298N — MOTORREDUCTORES TT
 // ================================================================
 
-const int SERVO_ABIERTO  = 0;    // grados para techo abierto
-const int SERVO_CERRADO  = 180;  // grados para techo cerrado (gira 180°)
+// Motor A (izquierdo)
+#define MOTOR_A_IN1  25
+#define MOTOR_A_IN2  26
+#define MOTOR_A_ENA  27   // PWM velocidad (o conectar directo a 5V para velocidad máxima)
+
+// Motor B (derecho)
+#define MOTOR_B_IN3  32
+#define MOTOR_B_IN4  33
+#define MOTOR_B_ENB  14   // PWM velocidad
 
 // ================================================================
-//  OBJETOS
+//  CALIBRACIÓN — AJUSTAR SEGÚN TU MECANISMO
+// ================================================================
+
+// Tiempo en milisegundos que tarda el techo en recorrer su carrera completa
+const unsigned long TIEMPO_MOVIMIENTO = 3000; // 3 segundos — ajustar al probar
+
+// Velocidad PWM (0-255). 255 = máxima velocidad
+const int VELOCIDAD_MOTOR = 200;
+
+// ================================================================
+//  OBJETOS Y ESTADO GLOBAL
 // ================================================================
 
 DHT dht(DHT_PIN, DHT22);
-Servo servo1;
-Servo servo2;
 WebSocketsClient ws;
-
-// ================================================================
-//  ESTADO GLOBAL
-// ================================================================
 
 String estadoTecho = "CLOSED";
 bool wsConectado   = false;
 unsigned long ultimaTelemetria = 0;
-const unsigned long INTERVALO_TELEMETRIA = 5000; // 5 segundos
+const unsigned long INTERVALO_TELEMETRIA = 5000;
+
+// ================================================================
+//  CONTROL DE MOTORES
+// ================================================================
+
+void detenerMotores() {
+  digitalWrite(MOTOR_A_IN1, LOW);
+  digitalWrite(MOTOR_A_IN2, LOW);
+  digitalWrite(MOTOR_B_IN3, LOW);
+  digitalWrite(MOTOR_B_IN4, LOW);
+}
+
+void moverTecho(String estado) {
+  if (estado == "OPEN" && estadoTecho != "OPEN") {
+    Serial.println("→ Abriendo techo...");
+    estadoTecho = "MOVING";
+
+    // Avanzar: ambos motores hacia adelante
+    analogWrite(MOTOR_A_ENA, VELOCIDAD_MOTOR);
+    analogWrite(MOTOR_B_ENB, VELOCIDAD_MOTOR);
+    digitalWrite(MOTOR_A_IN1, HIGH);
+    digitalWrite(MOTOR_A_IN2, LOW);
+    digitalWrite(MOTOR_B_IN3, HIGH);
+    digitalWrite(MOTOR_B_IN4, LOW);
+
+    delay(TIEMPO_MOVIMIENTO);
+    detenerMotores();
+    estadoTecho = "OPEN";
+    Serial.println("✓ Techo ABIERTO");
+
+  } else if (estado == "CLOSED" && estadoTecho != "CLOSED") {
+    Serial.println("→ Cerrando techo...");
+    estadoTecho = "MOVING";
+
+    // Retroceder: ambos motores hacia atrás
+    analogWrite(MOTOR_A_ENA, VELOCIDAD_MOTOR);
+    analogWrite(MOTOR_B_ENB, VELOCIDAD_MOTOR);
+    digitalWrite(MOTOR_A_IN1, LOW);
+    digitalWrite(MOTOR_A_IN2, HIGH);
+    digitalWrite(MOTOR_B_IN3, LOW);
+    digitalWrite(MOTOR_B_IN4, HIGH);
+
+    delay(TIEMPO_MOVIMIENTO);
+    detenerMotores();
+    estadoTecho = "CLOSED";
+    Serial.println("✓ Techo CERRADO");
+  }
+}
 
 // ================================================================
 //  FUNCIONES DE SENSORES
@@ -64,45 +120,17 @@ const unsigned long INTERVALO_TELEMETRIA = 5000; // 5 segundos
 
 float leerUV() {
   int raw = analogRead(UV_PIN);
-  // GUVA-S12SD: 0-3.3V -> UV index 0-11+
-  // Ajustar el divisor según el circuito de acondicionamiento
   float voltaje = raw * (3.3f / 4095.0f);
-  float uvIndex = voltaje * 10.0f; // aprox. 0.1V = 1 UV
+  float uvIndex = voltaje * 10.0f;
   return constrain(uvIndex, 0.0f, 15.0f);
 }
 
 bool leerLluvia() {
-  // FC-37: LOW = lluvia detectada, HIGH = seco
-  return !digitalRead(RAIN_DIG_PIN);
+  return !digitalRead(RAIN_DIG_PIN); // LOW = lluvia detectada
 }
 
 int leerLluviaAnalog() {
-  return analogRead(RAIN_ANA_PIN); // 0 = muy mojado, 4095 = seco
-}
-
-// ================================================================
-//  CONTROL DE SERVOS
-// ================================================================
-
-void moverTecho(String estado) {
-  if (estado == "OPEN" && estadoTecho != "OPEN") {
-    Serial.println("→ Abriendo techo...");
-    estadoTecho = "MOVING";
-    servo1.write(SERVO_ABIERTO);
-    servo2.write(SERVO_ABIERTO);
-    delay(1500); // tiempo para que el servo llegue
-    estadoTecho = "OPEN";
-    Serial.println("✓ Techo ABIERTO");
-
-  } else if (estado == "CLOSED" && estadoTecho != "CLOSED") {
-    Serial.println("→ Cerrando techo...");
-    estadoTecho = "MOVING";
-    servo1.write(SERVO_CERRADO);
-    servo2.write(SERVO_CERRADO);
-    delay(1500);
-    estadoTecho = "CLOSED";
-    Serial.println("✓ Techo CERRADO");
-  }
+  return analogRead(RAIN_ANA_PIN);
 }
 
 // ================================================================
@@ -122,7 +150,6 @@ void enviarTelemetria() {
   int   lluviaAnalog = leerLluviaAnalog();
   float uvIndex      = leerUV();
 
-  // Construir JSON
   StaticJsonDocument<256> doc;
   doc["temperature"] = round(temp * 10) / 10.0;
   doc["humidity"]    = round(hum * 10) / 10.0;
@@ -134,9 +161,8 @@ void enviarTelemetria() {
   String body;
   serializeJson(doc, body);
 
-  // Enviar a Railway (HTTPS)
   WiFiClientSecure cliente;
-  cliente.setInsecure(); // Railway usa certificado válido pero omitimos verificación
+  cliente.setInsecure();
   HTTPClient http;
   http.begin(cliente, String("https://") + SERVER_HOST + "/api/telemetry");
   http.addHeader("Content-Type", "application/json");
@@ -161,7 +187,6 @@ void webSocketEvent(WStype_t tipo, uint8_t* payload, size_t longitud) {
     case WStype_CONNECTED:
       wsConectado = true;
       Serial.println("✓ WebSocket conectado");
-      // Registrar este ESP32 en el servidor
       ws.sendTXT("42[\"esp32:register\"]");
       break;
 
@@ -171,16 +196,10 @@ void webSocketEvent(WStype_t tipo, uint8_t* payload, size_t longitud) {
       break;
 
     case WStype_TEXT:
-      // Socket.IO ping → responder pong
-      if (msg == "2") {
-        ws.sendTXT("3");
-        return;
-      }
+      if (msg == "2") { ws.sendTXT("3"); return; }
 
-      // Evento de Socket.IO: empieza con "42"
       if (msg.startsWith("42")) {
         Serial.println("WS recibido: " + msg);
-
         if (msg.indexOf("roof:command") >= 0) {
           if (msg.indexOf("\"OPEN\"") >= 0) {
             moverTecho("OPEN");
@@ -209,18 +228,21 @@ void webSocketEvent(WStype_t tipo, uint8_t* payload, size_t longitud) {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n=== Sistema de Techumbre ESP32 ===");
+  Serial.println("\n=== AutoMalla ESP32 ===");
 
-  // Pines
+  // Pines sensores
   pinMode(RAIN_DIG_PIN, INPUT);
   dht.begin();
 
-  // Servos
-  servo1.attach(SERVO1_PIN);
-  servo2.attach(SERVO2_PIN);
-  servo1.write(SERVO_CERRADO);
-  servo2.write(SERVO_CERRADO);
-  Serial.println("Servos inicializados en posición CERRADO");
+  // Pines motores
+  pinMode(MOTOR_A_IN1, OUTPUT);
+  pinMode(MOTOR_A_IN2, OUTPUT);
+  pinMode(MOTOR_A_ENA, OUTPUT);
+  pinMode(MOTOR_B_IN3, OUTPUT);
+  pinMode(MOTOR_B_IN4, OUTPUT);
+  pinMode(MOTOR_B_ENB, OUTPUT);
+  detenerMotores();
+  Serial.println("Motores inicializados — detenidos");
 
   // Conectar WiFi
   WiFi.mode(WIFI_STA);
@@ -255,9 +277,8 @@ void setup() {
 // ================================================================
 
 void loop() {
-  ws.loop(); // mantener conexión WebSocket
+  ws.loop();
 
-  // Reconectar WiFi si se cae
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi perdido, reconectando...");
     WiFi.reconnect();
@@ -265,7 +286,6 @@ void loop() {
     return;
   }
 
-  // Enviar telemetría cada 5 segundos
   unsigned long ahora = millis();
   if (ahora - ultimaTelemetria >= INTERVALO_TELEMETRIA) {
     ultimaTelemetria = ahora;
